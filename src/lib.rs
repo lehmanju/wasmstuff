@@ -10,8 +10,8 @@ pub fn start() -> Result<(), JsValue> {
         .create_element("canvas")?
         .dyn_into::<web_sys::HtmlCanvasElement>()?;
     document.body().unwrap().append_child(&canvas)?;
-    canvas.set_width(640);
-    canvas.set_height(480);
+    canvas.set_width(1000);
+    canvas.set_height(800);
     canvas.style().set_property("border", "solid")?;
 	canvas.style().set_property("cursor", "none")?;
     let context = canvas
@@ -35,6 +35,9 @@ pub fn start() -> Result<(), JsValue> {
         let context = context.clone();
         let pressed = pressed.clone();
         let closure = Closure::wrap(Box::new(move |event: web_sys::PointerEvent| {
+            /*let event_array = event.get_coalesced_events();
+            for element in event_array.iter() {
+                let event = web_sys::PointerEvent::from(element);*/
             if pressed.get() {
 				if event.pressure() < 0.8 {
 					context.set_stroke_style(&JsValue::from_str("blue"));
@@ -46,8 +49,9 @@ pub fn start() -> Result<(), JsValue> {
                 context.begin_path();
                 context.move_to(event.offset_x() as f64, event.offset_y() as f64);
             }
+        //}
         }) as Box<dyn FnMut(_)>);
-        canvas.add_event_listener_with_callback("pointermove", closure.as_ref().unchecked_ref())?;
+        canvas.add_event_listener_with_callback("pointerrawupdate", closure.as_ref().unchecked_ref())?;
         closure.forget();
     }
     {
